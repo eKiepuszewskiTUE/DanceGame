@@ -1,0 +1,16 @@
+﻿<Properties StartupConfiguration="{6D4ECD64-0071-E7D0-D489-71DBFC1BEFFA}|">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/GameManager.cs">
+    <Files>
+      <File FileName="Assets/CharacterController.cs" Line="64" Column="6" />
+      <File FileName="Assets/GameManager.cs" Line="23" Column="55" />
+      <File FileName="Assets/EnemyController.cs" Line="26" Column="64" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="f6269675-108f-46fa-ab35-804af4207e95" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
