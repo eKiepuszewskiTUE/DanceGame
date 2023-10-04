@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace UnityEditor.Tilemaps
@@ -8,10 +9,12 @@ namespace UnityEditor.Tilemaps
         private static readonly string brushesUssClassName = "unity-tilepalette-splitview-brushes";
         private static readonly string splitViewDataKey = "unity-tilepalette-splitview-data";
 
+        private const float kMinSplitRatio = 0.3f;
+
         private TwoPaneSplitView m_SplitView;
         private TilePaletteElement m_PaletteElement;
         private TilePaletteBrushElementToggle m_BrushElementToggle;
-        private float m_LastSplitDimension = 200f;
+        private float m_LastSplitRatio = kMinSplitRatio;
 
         public TilePaletteElement paletteElement => m_PaletteElement;
 
@@ -30,9 +33,10 @@ namespace UnityEditor.Tilemaps
 
         private float fullLength => isVerticalOrientation ? layout.height : layout.width;
 
-        private bool isMinSplit => (fullLength - m_SplitView.fixedPaneDimension) <= minSplitDimension;
+        private bool isMinSplit => (fullLength - m_SplitView.fixedPaneDimension) <= minBottomSplitDimension;
 
-        private float minSplitDimension => isVerticalOrientation ? 24f : 0f;
+        private float minTopSplitDimension => isVerticalOrientation ? 24f : 12f;
+        private float minBottomSplitDimension => isVerticalOrientation ? 24f : 12f;
 
         public void ChangeSplitDimensions(float dimension)
         {
@@ -56,7 +60,7 @@ namespace UnityEditor.Tilemaps
             brushesElement.Add(new TilePaletteBrushesPopup());
             brushesElement.Add(new TilePaletteBrushInspectorElement());
 
-            m_SplitView = new TwoPaneSplitView(0, 0, isVerticalOrientation ? TwoPaneSplitViewOrientation.Vertical : TwoPaneSplitViewOrientation.Horizontal);
+            m_SplitView = new TwoPaneSplitView(0, -1, isVerticalOrientation ? TwoPaneSplitViewOrientation.Vertical : TwoPaneSplitViewOrientation.Horizontal);
             m_SplitView.contentContainer.Add(m_PaletteElement);
             m_SplitView.contentContainer.Add(brushesElement);
             Add(m_SplitView);
@@ -72,16 +76,46 @@ namespace UnityEditor.Tilemaps
 
         private void BrushElementToggleChanged(bool show)
         {
-            ChangeSplitDimensions(show ? m_LastSplitDimension : minSplitDimension);
+            var dimension = minBottomSplitDimension;
+            if (show)
+            {
+                dimension = m_LastSplitRatio * fullLength;
+                if (dimension < minBottomSplitDimension)
+                    dimension = kMinSplitRatio * fullLength;
+            }
+            ChangeSplitDimensions(dimension);
         }
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
         {
             m_BrushElementToggle.SetValueWithoutNotify(!isMinSplit);
 
+            if (m_SplitView.fixedPaneDimension < 0f)
+            {
+                var defaultLength = fullLength * (1.0f - kMinSplitRatio);
+                m_SplitView.fixedPaneInitialDimension = defaultLength;
+                ChangeSplitDimensions(defaultLength);
+            }
+
             var newDimension = fullLength - m_SplitView.fixedPaneDimension;
-            if (newDimension > minSplitDimension)
-                m_LastSplitDimension = newDimension;
+            if (fullLength > minBottomSplitDimension)
+            {
+                // Force the palette toolbar to always be shown
+                if (m_SplitView.fixedPaneDimension < minTopSplitDimension)
+                {
+                    ChangeSplitDimensions(fullLength - minTopSplitDimension);
+                }
+                // Force the brush toolbar to always be shown
+                if (newDimension < minBottomSplitDimension)
+                {
+                    ChangeSplitDimensions(minBottomSplitDimension);
+                }
+            }
+            if (newDimension > minBottomSplitDimension)
+            {
+                var newLastSplit = Mathf.Max(newDimension, kMinSplitRatio * fullLength);
+                m_LastSplitRatio = newLastSplit / fullLength;
+            }
         }
     }
 }
